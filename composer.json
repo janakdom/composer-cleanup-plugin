@@ -1,5 +1,5 @@
 {
-    "name": "barryvdh/composer-cleanup-plugin",
+    "name": "janakdom/composer-cleanup-plugin",
     "type": "composer-plugin",
     "description": "A composer cleanup plugin, to remove tests and documentation to save space",
     "license": "MIT",
@@ -12,6 +12,9 @@
     "require": {
         "composer-plugin-api": "^2.0"
     },
+    "require-dev": {
+		"composer/composer": "^2.0"
+	},
     "autoload": {
         "psr-4": {
             "Barryvdh\\Composer\\": "src/"
