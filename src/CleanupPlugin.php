@@ -158,6 +158,9 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
                 }
             }
         }
+	    
+	    
+        $this->io->write("Package $packageDir cleared!");
 
         return true;
     }
