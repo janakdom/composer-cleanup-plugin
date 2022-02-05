@@ -1,29 +1,27 @@
 <?php
-
-namespace Barryvdh\Composer;
+namespace Janakdom\Composer;
 
 use Composer\Composer;
+use Composer\Config;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
+use Composer\Package\CompletePackage;
 use Composer\Plugin\PluginInterface;
-use Composer\Script\ScriptEvents;
-use Composer\Installer\PackageEvent;
-use Composer\Script\CommandEvent;
+use Composer\Repository\WritableRepositoryInterface;
+use Composer\Script\Event;
 use Composer\Util\Filesystem;
 use Composer\Package\BasePackage;
 
 class CleanupPlugin implements PluginInterface, EventSubscriberInterface
 {
-    /** @var  \Composer\Composer $composer */
+    /** @var  Composer $composer */
     protected $composer;
-    /** @var  \Composer\IO\IOInterface $io */
+    /** @var  IOInterface $io */
     protected $io;
-    /** @var  \Composer\Config $config */
+    /** @var  Config $config */
     protected $config;
-    /** @var  \Composer\Util\Filesystem $filesystem */
+    /** @var  Filesystem $filesystem */
     protected $filesystem;
-    /** @var  array $rules */
-    protected $rules;
 
     /**
      * {@inheritDoc}
@@ -34,7 +32,6 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
         $this->io = $io;
         $this->config = $composer->getConfig();
         $this->filesystem = new Filesystem();
-        $this->rules = CleanupRules::getRules();
 	}
 	
 	/**
@@ -59,56 +56,28 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
     public static function getSubscribedEvents()
     {
         return [
-		'post-package-install'	=> 'onPostPackageInstall',
-		'post-package-update'	=> 'onPostPackageUpdate',
-            /*ScriptEvents::POST_PACKAGE_INSTALL  => array(
-                array('onPostPackageInstall', 0)
-            ),
-            ScriptEvents::POST_PACKAGE_UPDATE  => array(
-                array('onPostPackageUpdate', 0)
-            ),*/
-            /*ScriptEvents::POST_INSTALL_CMD  => array(
-                array('onPostInstallUpdateCmd', 0)
-            ),
-            ScriptEvents::POST_UPDATE_CMD  => array(
-                array('onPostInstallUpdateCmd', 0)
-            ),*/
+		    'post-install-cmd'	=> 'onPostInstallCmd',
+		    'post-update-cmd'	=> 'onPostUpdateCmd'
         ];
     }
 
-    /**
-     * Function to run after a package has been installed
-     */
-    public function onPostPackageInstall(PackageEvent $event)
+    public function onPostInstallCmd(Event $event)
     {
-        /** @var \Composer\Package\CompletePackage $package */
-        $package = $event->getOperation()->getPackage();
-
-        $this->cleanPackage($package);
+        $this->onVendorClear($event);
     }
 
-    /**
-     * Function to run after a package has been updated
-     */
-    public function onPostPackageUpdate(PackageEvent $event)
+    public function onPostUpdateCmd(Event $event)
     {
-        /** @var \Composer\Package\CompletePackage $package */
-        $package = $event->getOperation()->getTargetPackage();
-
-        $this->cleanPackage($package);
+        $this->onVendorClear($event);
     }
 
-    /**
-     * Function to run after a package has been updated
-     *
-     * @param CommandEvent $event
-     */
-    public function onPostInstallUpdateCmd(CommandEvent $event)
-    {
-        /** @var \Composer\Repository\WritableRepositoryInterface $repository */
+    private function onVendorClear(Event $event) {
+        $this->io->write('Clean vendor on \''.$event->getName().'\'');
+
+        /** @var WritableRepositoryInterface $repository */
         $repository = $this->composer->getRepositoryManager()->getLocalRepository();
 
-        /** @var \Composer\Package\CompletePackage $package */
+        /** @var CompletePackage $package */
         foreach($repository->getPackages() as $package){
             if ($package instanceof BasePackage) {
                 $this->cleanPackage($package);
@@ -126,6 +95,7 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
     {
         // Only clean 'dist' packages
         if ($package->getInstallationSource() !== 'dist') {
+            $this->io->warning('Cannot clear package \''.$package->getName().'\', it is not dist.');
             return false;
         }
 
@@ -134,9 +104,10 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
         $packageName = $package->getPrettyName();
         $packageDir = $targetDir ? $packageName . '/' . $targetDir : $packageName ;
 
-        $rules = isset($this->rules[$packageName]) ? $this->rules[$packageName] : null;
+        $rules = CleanupRules::getRules($packageName);
         if(!$rules){
-            return;
+            $this->io->warning('Cannot clear package \''.$package->getName().'\'');
+            return false;
         }
 
         $dir = $this->filesystem->normalizePath(realpath($vendorDir . '/' . $packageDir));
@@ -144,7 +115,7 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
             return false;
         }
 
-        foreach((array) $rules as $part) {
+        foreach((array)$rules as $part) {
             // Split patterns for single globs (should be max 260 chars)
             $patterns = explode(' ', trim($part));
             
@@ -154,13 +125,10 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
                         $this->filesystem->remove($file);
                     }
                 } catch (\Exception $e) {
-                    $this->io->write("Could not parse $packageDir ($pattern): ".$e->getMessage());
+                    $this->io->error("Could not parse $packageDir ($pattern): ".$e->getMessage());
                 }
             }
         }
-	    
-	    
-        $this->io->write("Package $packageDir cleared!");
 
         return true;
     }

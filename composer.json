@@ -7,6 +7,10 @@
         {
             "name": "Barry vd. Heuvel",
             "email": "barryvdh@gmail.com"
+        },
+        {
+            "name": "Dominik Janák",
+            "email": "dev@dominikjanak.cz"
         }
     ],
     "require": {
@@ -17,13 +21,10 @@
 	},
     "autoload": {
         "psr-4": {
-            "Barryvdh\\Composer\\": "src/"
+            "Janakdom\\Composer\\": "src/"
         }
     },
     "extra": {
-        "branch-alias": {
-            "dev-master": "0.3-dev"
-        },
-        "class": "Barryvdh\\Composer\\CleanupPlugin"
+        "class": "Janakdom\\Composer\\CleanupPlugin"
     }
 }
