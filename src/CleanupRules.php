@@ -70,7 +70,7 @@ class CleanupRules
         }
         
         if($packageName == 'symplify/easy-coding-standard') {
-            $out[0] = str_replace('package* ', '', $out[0]),
+            $out[0] = str_replace('package* ', '', $out[0]);
         }
         
         return $out;
