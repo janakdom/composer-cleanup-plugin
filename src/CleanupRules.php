@@ -1,5 +1,5 @@
 <?php
-namespace Janakdom\CleanUpComposer;
+namespace Janakdom\Composer;
 
 class CleanupRules
 {
