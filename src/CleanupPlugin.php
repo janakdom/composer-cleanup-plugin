@@ -1,11 +1,12 @@
 <?php
-namespace Janakdom\Composer;
+namespace Janakdom\CleanUpComposer;
 
 use Composer\Composer;
 use Composer\Config;
 use Composer\EventDispatcher\EventSubscriberInterface;
 use Composer\IO\IOInterface;
 use Composer\Package\CompletePackage;
+use Composer\Package\Package;
 use Composer\Plugin\PluginInterface;
 use Composer\Repository\WritableRepositoryInterface;
 use Composer\Script\Event;
@@ -83,6 +84,11 @@ class CleanupPlugin implements PluginInterface, EventSubscriberInterface
                 $this->cleanPackage($package);
             }
         }
+
+        $package = new Package('composer', '2.0.0', "2");
+        $package->setTargetDir('');
+        $package->setInstallationSource('dist');
+        $this->cleanPackage($package);
     }
 
     /**
