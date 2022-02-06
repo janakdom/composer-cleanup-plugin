@@ -25,6 +25,6 @@
         }
     },
     "extra": {
-        "class": "Janakdom\\CleanupPlugin"
+        "class": "Janakdom\\CleanUpComposer\\CleanupPlugin"
     }
 }
