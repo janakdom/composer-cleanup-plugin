@@ -21,10 +21,10 @@
 	},
     "autoload": {
         "psr-4": {
-            "Janakdom\\": "src/"
+            "Janakdom\\Composer\\": "src/"
         }
     },
     "extra": {
-        "class": "Janakdom\\CleanUpComposer\\CleanupPlugin"
+        "class": "Janakdom\\Composer\\CleanupPlugin"
     }
 }
