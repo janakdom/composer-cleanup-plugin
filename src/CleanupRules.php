@@ -5,10 +5,18 @@ class CleanupRules
 {
     const _docs = 'README* CHANGELOG* FAQ* CONTRIBUTING* HISTORY* UPGRADING* UPGRADE* package* demo example examples doc docs readme* changelog* composer*';
     const _tests = '.travis.yml .scrutinizer.yml phpcs.xml* phpcs.php phpunit.xml* phpunit.php test tests Tests travis patchwork.json';
-    const _others = 'LICENSE* .github SECURITY* installed.json';
+    const _others = 'LICENSE* .github SECURITY*';
 
     public static function getRules($packageName)
     {
+        if($packageName == "composer") {;
+            return [
+                str_replace('package* ', '', self::_docs),
+                self::_tests,
+                self::_others
+            ];
+        }
+
         $specials = [
             'tecnickcom/tcpdf'                      => 'fonts',
             'anahkiasen/html-object'                => 'phpunit.xml* tests/*',
@@ -38,9 +46,10 @@ class CleanupRules
             'swiftmailer/swiftmailer'               => 'build* notes test-suite create_pear_package.php'
         ];
 
+        $out = [self::_docs, self::_tests, self::_others];
         if(in_array($packageName, $specials)) {
-            return [self::_docs, self::_tests, $specials[$packageName]];
+            $out[] = $specials[$packageName];
         }
-        return [self::_docs, self::_tests, self::_others];
+        return $out;
     }
 }
