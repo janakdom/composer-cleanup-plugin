@@ -58,6 +58,7 @@ class CleanupRules
             'paragonie/sodium_compat'               => 'dist build-phar.sh appveyor.yml psalm-above-3.xml psalm-below-3.xml',
             'phpstan/phpstan'                       => 'phpstan.phar.asc conf',
             'ramsey/collection'                     => 'bin',
+            'symplify/easy-coding-standard'         => 'bin',
             'sensio/framework-extra-bundle'         => '.php_cs* .symfony.bundle.yaml',
             'spomky-labs/otphp'                     => 'CODE_OF_CONDUCT* .php_cs.dist',
         ];
@@ -67,6 +68,11 @@ class CleanupRules
         if(array_key_exists($packageName, $specials)) {
             $out[] = $specials[$packageName];
         }
+        
+        if($packageName == 'symplify/easy-coding-standard') {
+            $out[0] = str_replace('package* ', '', $out[0]),
+        }
+        
         return $out;
     }
 }
